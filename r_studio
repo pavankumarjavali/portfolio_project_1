@@ -1,0 +1,47 @@
+/* filtering and sorting using tidyverse */
+
+install.packages("palmerpenguins")
+library(palmerpenguins)
+skim_without_charts(penguins)
+library(tidyverse)
+penguins_new <- penguins %>%
+  drop_na() %>% 
+  group_by(island,species) %>% 
+  summarise(max_length = max(bill_length_mm)) 
+View(penguins_new)
+penguins_1 <- penguins %>% 
+  filter(island == "Dream" & species == "Adelie")
+view(penguins_1)
+head(penguins_1)
+
+/* Visualization using ggplot2 */
+
+library(ggplot2)
+library(palmerpenguins)
+library(tidyverse)
+data(penguins)
+View(penguins)
+
+ggplot(data= penguins)+ 
+  geom_point(mapping = aes(x= bill_length_mm , y= flipper_length_mm ))
+
+ggplot(data = penguins , aes(x= bill_length_mm , y= flipper_length_mm)) + 
+  geom_point(color="purple") + geom_smooth(method = "loess")
+
+ggplot(data= penguins , aes(x= species , fill = species)) +
+  geom_bar()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
