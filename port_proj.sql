@@ -1,5 +1,6 @@
 /* SQL Skills : Sorting , Filtering , Average , SUM , Aliasing & 
-				Joins , search operations
+				Joins , search operations , CASE statements,
+				using temporary tables .
 
 */
 
@@ -48,3 +49,38 @@ SELECT first_name,last_name,address ,district
 FROM customer
 INNER JOIN address
  ON customer.address_id = address.address_id
+
+-- outer join
+SELECT first_name,last_name,address ,district 
+FROM customer
+FULL OUTER JOIN address
+ ON customer.address_id = address.address_id
+ 
+
+-- Using CASE statements and also creating a temporary table .
+
+SELECT title ,rental_rate,
+CASE
+	WHEN rental_rate > 2 THEN rental_rate -(rental_rate*0.10)
+END AS festive_discount
+FROM film
+WHERE rental_rate > 2
+ORDER BY rental_rate
+
+CREATE TEMPORARY TABLE discount_prices (
+	title varchar(200),
+	rent_rate numeric,
+	rate_after_discount numeric 
+)
+
+INSERT INTO discount_prices 
+SELECT title ,rental_rate,
+CASE
+	WHEN rental_rate > 2 THEN rental_rate -(rental_rate*0.10)
+END AS festive_discount
+FROM film
+WHERE rental_rate > 2
+ORDER BY rental_rate
+
+SELECT *
+FROM discount_prices
