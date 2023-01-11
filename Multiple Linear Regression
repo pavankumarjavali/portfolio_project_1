@@ -1,0 +1,102 @@
+#import the required libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+import warnings
+warnings.filterwarnings('ignore')
+---------------------------------------------------------------------------------------
+#### Importing data and basic exploration
+#### Choose features to further work on
+#In our case, let us pick price as the target; and date, bedrooms, bathrooms, sqft_living, floors, waterfront, view, condition, grade, zipcode as features
+
+house_data_df = house_data[["price","date", "bedrooms", 
+                                  "bathrooms", "sqft_living", "floors", 
+                                  "waterfront", "view", "condition", "grade","zipcode"]]
+house_data_df
+----------------------------------------------------------------------------------------------
+### Feature Engineering
+#1. Lets split date into year and month to consider that price could depend on year and month of sale due to market conditions
+#2. Lets treat waterfront, view, condition, grade, year, month and zipcode as categorical features.
+#3. Lets treat price, bedrooms, bathrooms, spft_living, floors as continuous numerical values
+#4. Lets encode the categorical values and normalise the numerical values.
+
+# Extracting year and month from date
+house_data_df.loc[:,"year"] = house_data["date"].str[0:4] #df_name["col_name"].str[0:4] 0-3 --> 2014 
+house_data_df.loc[:,"month"] = house_data["date"].str[4:6]
+house_data_df
+
+#removing date after this extraction
+house_data_df = house_data_df.drop(columns=["date"])
+
+#Encoding the categorical data : 
+house_data_df = house_data[["price","date", "bedrooms", 
+                                  "bathrooms", "sqft_living", "floors", 
+                                  "waterfront", "view", "condition", "grade","zipcode"]]
+house_data_df
+# encoding categorical values
+cat_features = ["waterfront", "view", "condition", "grade", "year", "month", "zipcode"]
+house_data_df = pd.get_dummies(house_data_df,columns=cat_features) # one hot encoding
+print(house_data_df.columns)
+--------------------------------------------------------------------------------------------------
+
+# Normalizing the data 
+from sklearn.preprocessing import StandardScaler
+# finding the mean and std deviation of numerical columns
+scaler = StandardScaler().fit(house_data_df[['price', 'bedrooms', 'bathrooms', 'sqft_living', 'floors']]) 
+# scaling columns to a common range
+house_data_normalized = scaler.transform(house_data_df[['price', 'bedrooms', 'bathrooms', 'sqft_living', 'floors']])# Scaled data 
+
+# updating the numerical(normalized) data into the data frame
+house_data_df_normalized=pd.DataFrame(house_data_normalized,columns=['price', 'bedrooms', 'bathrooms', 'sqft_living', 'floors'])
+house_data_df_normalized=house_data_df_normalized.join(house_data_df[house_data_df.columns.drop(['price', 'bedrooms', 'bathrooms', 'sqft_living', 'floors'])])
+
+-----------------------------------------------------------------------------------------------------------
+#Delfinig X and y for Model 
+Y = house_data_df_normalized['price']
+
+X = house_data_df_normalized[house_data_df_normalized.columns.drop('price')]
+print(X.shape)
+------------------------------------------------------------------------------------------------------------
+
+# Splitting the data into test and train set :
+from sklearn.model_selection import train_test_split
+X_train,X_test,Y_train,Y_test = train_test_split(X,Y,test_size=0.2,random_state=100) #80:20
+-------------------------------------------------------------------------------------------------------------
+
+#MODEL BUILDING AND VALIDATION :
+
+#importing required module to build the model
+from sklearn.linear_model import LinearRegression
+
+#building the model
+model = LinearRegression()
+model.fit(X_train,Y_train)
+train_score=model.score(X_train,Y_train)
+test_score=model.score(X_test,Y_test)
+print('Train Score (R-Squared): ',train_score)
+print('Test Score (R-Squared)',test_score)
+-----------------------------------------------------
+# MODEL EVALUATION:
+from sklearn.metrics import mean_squared_error
+
+#root mean square error (RMSE) calculation for train data
+train_predictions = model.predict(X_train)
+train_RMSE=mean_squared_error(Y_train,train_predictions)**0.5
+print('Train RMSE : ',train_RMSE)
+
+
+test_predictions = model.predict(X_test)
+test_RMSE=mean_squared_error(Y_test,test_predictions)**0.5
+print('Test RMSE : ',test_RMSE)
+
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+
+
+
+
+
+
